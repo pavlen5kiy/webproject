@@ -57,7 +57,6 @@ intervals_markup = quick_markup({
     'Back ↩️': {'callback_data': 'Back'}
 }, row_width=2)
 
-
 chords_markup = quick_markup({
     'Major': {'callback_data': 'maj'},
     'Minor': {'callback_data': 'min'},

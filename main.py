@@ -1,6 +1,6 @@
 from telebot import *
 
-from notes_and_scales import *
+from functions import *
 from variables import *
 from markups import *
 
@@ -27,23 +27,19 @@ def send_welcome(message):
                      parse_mode="Markdown")
 
 
-# Define a message handler to check for commands
+# Handle non-command messages
 @bot.message_handler(func=lambda message: not message.text.startswith('/'))
 def handle_non_command_messages(message):
     # Handle non-command messages here
     bot.send_message(message.chat.id, "Please, send commands only.")
 
 
-@bot.callback_query_handler(func=lambda call: True)
-def start_callback_handler(call):
-    global current_scale
-    global current_note
-    global current_interval
+# Handle "main menu" and "back" buttons
+@bot.callback_query_handler(
+    func=lambda call: call.data in callback_queries_types['main'])
+def main_callbacks_handler(call):
     global last_message
-    global destination
     global last_messages
-    global current_chord
-    global current_addition
 
     chat_id = call.message.chat.id
 
@@ -64,12 +60,24 @@ def start_callback_handler(call):
             last_messages.pop(-1)
             last_message = last_messages[-1]
 
-    elif call.data == "Basics":
+
+# Handle main menu's buttons
+@bot.callback_query_handler(
+    func=lambda call: call.data in callback_queries_types['home'])
+def main_menu_callback_handler(call):
+    global destination
+    global last_messages
+    global last_message
+
+    chat_id = call.message.chat.id
+
+    if call.data == "Basics":
         bot.answer_callback_query(call.id, "Coming soon")
         last_message = bot.send_message(chat_id,
                                         "Sorry, this option is under development now.")
 
         last_messages.append(last_message)
+
     elif call.data == "Scale":
         bot.answer_callback_query(call.id, "Build a scale")
         destination = call.data
@@ -100,7 +108,24 @@ def start_callback_handler(call):
 
         last_messages.append(last_message)
 
-    elif call.data in NOTES:
+
+# Handle all other buttons
+@bot.callback_query_handler(
+    func=lambda call: call.data not in callback_queries_types[
+        'home'] and call.data not in callback_queries_types['main'])
+def main_menu_callback_handler(call):
+    global current_scale
+    global current_note
+    global current_interval
+    global last_message
+    global destination
+    global last_messages
+    global current_chord
+    global current_addition
+
+    chat_id = call.message.chat.id
+
+    if call.data in NOTES:
         current_note = call.data
 
         bot.answer_callback_query(call.id, current_note)
@@ -115,11 +140,19 @@ def start_callback_handler(call):
     elif call.data in SCALES:
         current_scale = call.data
         res = '\n'.join(get_scale(current_note, current_scale))
+        songs_text = ''
 
-        bot.answer_callback_query(call.id, f'{current_scale} scale')
+        if current_scale in ['Major', 'Minor']:
+            songs = '\n'.join(get_songs('dataset.csv', 10,
+                              NOTES_TO_NUMBERS[current_note],
+                              SCALES_TO_NUMBERS[current_scale]))
+            songs_text = (f'\n\nHere are some songs written in '
+                          f'_{current_note} {current_scale}_:\n\n{songs}')
+
+        bot.answer_callback_query(call.id, f'{current_scale} mode')
         last_message = bot.send_message(chat_id,
                                         f'Here is your _{current_note} '
-                                        f'{current_scale}_ scale:\n\n{res}',
+                                        f'{current_scale}_ scale:\n\n{res}' + songs_text,
                                         parse_mode="Markdown",
                                         reply_markup=finish_markup)
 
@@ -160,6 +193,7 @@ def start_callback_handler(call):
 
     elif call.data in CHORD_ADDITIONS:
         current_addition = call.data
+        
         if current_chord == 'maj':
             chord_sign = ''
         else:
