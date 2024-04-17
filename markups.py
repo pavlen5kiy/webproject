@@ -42,6 +42,12 @@ finish_markup = quick_markup({
     'Main menu 🏠': {'callback_data': 'Main'},
 }, row_width=2)
 
+scale_finish_markup = quick_markup({
+    'Back ↩️': {'callback_data': 'Back'},
+    'Main menu 🏠': {'callback_data': 'Main'},
+    'More songs ➕': {'callback_data': 'More'}
+}, row_width=2)
+
 intervals_markup = quick_markup({
     'Minor 2nd': {'callback_data': 'Minor 2nd'},
     'Major 2nd': {'callback_data': 'Major 2nd'},

@@ -10,6 +10,25 @@ bot = telebot.TeleBot(API_TOKEN)
 # Handle '/start'
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+    global current_scale
+    global current_note
+    global current_interval
+    global last_message
+    global destination
+    global last_messages
+    global current_chord
+    global current_addition
+    global last_songs
+
+    last_messages = []
+    destination = ''
+    current_note = ''
+    current_scale = ''
+    current_interval = ''
+    current_chord = ''
+    current_addition = ''
+    last_songs = []
+
     chat_id = message.chat.id
     bot.send_message(chat_id, """\
 Hi there, I am MusicTheoryBot 🎶
@@ -122,6 +141,7 @@ def main_menu_callback_handler(call):
     global last_messages
     global current_chord
     global current_addition
+    global last_songs
 
     chat_id = call.message.chat.id
 
@@ -141,20 +161,25 @@ def main_menu_callback_handler(call):
         current_scale = call.data
         res = '\n'.join(get_scale(current_note, current_scale))
         songs_text = ''
+        markup = finish_markup
+
+        current_songs = get_songs('dataset.csv', 10,
+                                  NOTES_TO_NUMBERS[current_note],
+                                  SCALES_TO_NUMBERS[current_scale])
+        last_songs.append(current_songs)
 
         if current_scale in ['Major', 'Minor']:
-            songs = '\n'.join(get_songs('dataset.csv', 10,
-                              NOTES_TO_NUMBERS[current_note],
-                              SCALES_TO_NUMBERS[current_scale]))
+            songs = '\n'.join(current_songs)
             songs_text = (f'\n\nHere are some songs written in '
                           f'_{current_note} {current_scale}_:\n\n{songs}')
+            markup = scale_finish_markup
 
         bot.answer_callback_query(call.id, f'{current_scale} mode')
         last_message = bot.send_message(chat_id,
                                         f'Here is your _{current_note} '
                                         f'{current_scale}_ scale:\n\n{res}' + songs_text,
                                         parse_mode="Markdown",
-                                        reply_markup=finish_markup)
+                                        reply_markup=markup)
 
         last_messages.append(last_message)
 
@@ -213,6 +238,31 @@ def main_menu_callback_handler(call):
                                         f'{addition_sign}_ chord:\n*{res}*',
                                         parse_mode="Markdown",
                                         reply_markup=finish_markup)
+
+        last_messages.append(last_message)
+
+    elif call.data == 'More':
+        bot.answer_callback_query(call.id, 'More songs')
+
+        current_songs = get_songs('dataset.csv', 20,
+                                  NOTES_TO_NUMBERS[current_note],
+                                  SCALES_TO_NUMBERS[current_scale])
+
+        while any(map(lambda s: len(set(s).intersection(set(current_songs))) > 4,
+                      last_songs)):
+            current_songs = get_songs('dataset.csv', 20,
+                                      NOTES_TO_NUMBERS[current_note],
+                                      SCALES_TO_NUMBERS[current_scale])
+
+        last_songs.append(current_songs)
+
+        songs = '\n'.join(current_songs)
+        songs_text = (f'\n\nHere are some more songs written in '
+                      f'_{current_note} {current_scale}_:\n\n{songs}')
+
+        last_message = bot.send_message(chat_id, songs_text,
+                                        parse_mode="Markdown",
+                                        reply_markup=scale_finish_markup)
 
         last_messages.append(last_message)
 
