@@ -73,15 +73,6 @@ SCALES_TO_NUMBERS = {
     'Minor': '0'
 }
 
-last_messages = []
-destination = ''
-current_note = ''
-current_scale = ''
-current_interval = ''
-current_chord = ''
-current_addition = ''
-last_songs = []
-
 destinations = {
     'Scale': {'text': 'OK. In which mode?', 'markup': scale_markup},
     'Intervals': {'text': 'OK. What interval?', 'markup': intervals_markup},
