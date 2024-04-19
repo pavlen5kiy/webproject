@@ -165,14 +165,15 @@ def main_menu_callback_handler(call):
         songs_text = ''
         markup = finish_markup
 
-        current_songs = get_songs('dataset.csv', 10,
-                                  NOTES_TO_NUMBERS[
-                                      users[user_id]["current_note"]],
-                                  SCALES_TO_NUMBERS[
-                                      users[user_id]["current_scale"]])
-        users[user_id]["last_songs"].append(current_songs)
-
         if users[user_id]["current_scale"] in ['Major', 'Minor']:
+            current_songs = get_songs('dataset.csv', 10,
+                                      NOTES_TO_NUMBERS[
+                                          users[user_id]["current_note"]],
+                                      SCALES_TO_NUMBERS[
+                                          users[user_id]["current_scale"]])
+
+            users[user_id]["last_songs"].append(current_songs)
+
             songs = '\n'.join(current_songs)
             songs_text = (f'\n\nHere are some songs written in '
                           f'_{users[user_id]["current_note"]} {users[user_id]["current_scale"]}_:\n\n{songs}')
@@ -214,9 +215,11 @@ def main_menu_callback_handler(call):
                                        f'OK. Any additions?',
                                        parse_mode="Markdown",
                                        reply_markup=chords_additions_markup)
+            users[user_id]['last_message'] = message.message_id
+
         else:
-            res = get_chord(users[user_id]["current_note"],
-                            users[user_id]["current_chord"])
+            res = get_chord(root=users[user_id]["current_note"],
+                            chord=users[user_id]["current_chord"])
             message = bot.send_message(chat_id,
                                        f'Here are notes of your '
                                        f'_{users[user_id]["current_note"]}{users[user_id]["current_chord"]}_'
@@ -242,9 +245,9 @@ def main_menu_callback_handler(call):
 
         bot.answer_callback_query(call.id, users[user_id]["current_addition"])
 
-        res = get_chord(users[user_id]['current_note'],
-                        users[user_id]['current_note'],
-                        users[user_id]["current_addition"])
+        res = get_chord(root=users[user_id]['current_note'],
+                        chord=users[user_id]['current_chord'],
+                        addition=users[user_id]["current_addition"])
         message = bot.send_message(chat_id,
                                    f'Here are notes of your '
                                    f'_{users[user_id]["current_note"]}{chord_sign}'
