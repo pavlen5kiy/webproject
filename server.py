@@ -1,3 +1,4 @@
+import os
 import json
 import asyncio
 
@@ -400,6 +401,9 @@ async def notes_training_callback_handler(call):
     user_id = str(call.from_user.id)
 
     users[user_id]['results'] = []
+    users[user_id]['note_answer'] = ''
+    users[user_id]['last_note'] = ''
+    users[user_id]['notes_shifts'] = []
 
     users[user_id]['destination'] = 'notes hearing'
 
@@ -463,6 +467,9 @@ async def intervals_training_callback_handler(call):
     user_id = str(call.from_user.id)
 
     users[user_id]['results'] = []
+    users[user_id]['interval_answer'] = ''
+    users[user_id]['last_interval'] = ''
+    users[user_id]['intervals'] = []
 
     users[user_id]['destination'] = 'intervals hearing'
 
@@ -524,8 +531,20 @@ async def intervals_training_callback_handler(call):
 
 if __name__ == "__main__":
     try:
+        for user in users.keys():
+            for type in ['note', 'scale', 'chord', 'interval']:
+                filename = f'{user}_{type}.mp3'
+                if os.path.exists(filename):
+                    os.remove(filename)
+                    print(f"File '{filename}' deleted successfully.")
+                else:
+                    print(f"File '{filename}' does not exist.")
+
         print(users)
+        print('Running...')
+
         asyncio.run(bot.polling())
+
     except Exception as e:
         print(e)
     finally:
