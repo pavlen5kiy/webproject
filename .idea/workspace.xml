@@ -4,50 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4fe4d185-cdb0-4e2c-a9c4-8a651c1b29be" name="Changes" comment="Bugfix">
-      <change afterPath="$PROJECT_DIR$/data/aug.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/blues_scale.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/c_note.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/dim.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/dorian_scale.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/fifth.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/fourth.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/maj.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/maj_6.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/maj_7.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/maj_maj6.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/maj_maj7.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/maj_sec.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/maj_seventh.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/maj_sixth.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/maj_third.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/major_pentatonic_scale.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/major_scale.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/min.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/min_6.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/min_7.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/min_maj6.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/min_maj7.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/min_sec.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/min_seventh.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/min_sixth.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/min_third.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/minor_pentatonic_scale.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/minor_scale.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/octave.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/tritone.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pitch_shift.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/webproject.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/webproject.iml" afterDir="false" />
+    <list default="true" id="4fe4d185-cdb0-4e2c-a9c4-8a651c1b29be" name="Changes" comment="Audio features added">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/markups.py" beforeDir="false" afterPath="$PROJECT_DIR$/markups.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pitch_shift.py" beforeDir="false" afterPath="$PROJECT_DIR$/pitch_shift.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/server.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/start.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/users.json" beforeDir="false" afterPath="$PROJECT_DIR$/users.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/variables.py" beforeDir="false" afterPath="$PROJECT_DIR$/variables.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,6 +25,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
 }</component>
@@ -77,17 +41,17 @@
     <option name="sortByType" value="true" />
     <option name="sortKey" value="BY_TYPE" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.csv_parser.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.notes_and_scales.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.csv_parser.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.notes_and_scales.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/data" />
@@ -251,7 +215,15 @@
       <option name="project" value="LOCAL" />
       <updated>1713531926130</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Audio features added">
+      <option name="closed" value="true" />
+      <created>1713710687372</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1713710687372</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -272,6 +244,7 @@
     <MESSAGE value="'More songs' button made" />
     <MESSAGE value="Users.json made" />
     <MESSAGE value="Bugfix" />
-    <option name="LAST_COMMIT_MESSAGE" value="Bugfix" />
+    <MESSAGE value="Audio features added" />
+    <option name="LAST_COMMIT_MESSAGE" value="Audio features added" />
   </component>
 </project>

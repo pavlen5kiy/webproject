@@ -55,27 +55,27 @@ INTERVALS_TO_FILES = {
 }
 
 
-def note_shift(semitones):
+def note_shift(semitones, user_id):
     audio_file = "data/c_note.mp3"
     y, sr = librosa.load(audio_file)
 
     y_shifted = librosa.effects.pitch_shift(y, sr=sr, n_steps=semitones)
 
-    output_file = "note.mp3"
+    output_file = f"{user_id}_note.mp3"
     sf.write(output_file, y_shifted, samplerate=sr)
 
 
-def interval_shift(interval, semitones):
+def interval_shift(interval, semitones, user_id):
     audio_file = f'data/{interval}.mp3'
     y, sr = librosa.load(audio_file)
 
     y_shifted = librosa.effects.pitch_shift(y, sr=sr, n_steps=semitones)
 
-    output_file = "interval.mp3"
+    output_file = f"{user_id}_interval.mp3"
     sf.write(output_file, y_shifted, samplerate=sr)
 
 
-def get_shifted_scale(scale, root):
+def get_shifted_scale(scale, root, user_id):
     audio_file = f'data/{scale}.mp3'
     y, sr = librosa.load(audio_file)
 
@@ -83,11 +83,11 @@ def get_shifted_scale(scale, root):
 
     y_shifted = librosa.effects.pitch_shift(y, sr=sr, n_steps=semitones)
 
-    output_file = "scale.mp3"
+    output_file = f"{user_id}_scale.mp3"
     sf.write(output_file, y_shifted, samplerate=sr)
 
 
-def get_shifted_chord(root, base, add=''):
+def get_shifted_chord(root, base, user_id, add=''):
     audio_file = f'data/{base}.mp3'
     if add:
         audio_file = f'data/{base}_{add}.mp3'
@@ -98,5 +98,5 @@ def get_shifted_chord(root, base, add=''):
 
     y_shifted = librosa.effects.pitch_shift(y, sr=sr, n_steps=semitones)
 
-    output_file = "chord.mp3"
+    output_file = f"{user_id}_chord.mp3"
     sf.write(output_file, y_shifted, samplerate=sr)

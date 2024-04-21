@@ -186,7 +186,7 @@ def notes_callback_handler(call):
 
     else:
         if call.data == users[user_id]['note_answer']:
-            caption = f'*Correct!* The answer is _{users[user_id]["note_answer"]}_'
+            caption = f'*Correct!* The answer is _{users[user_id]["note_answer"]}_.'
             users[user_id]['results'].append(1)
         else:
             caption = f"*Sorry, you're wrong.* The answer is _{users[user_id]['note_answer']}_."
@@ -228,9 +228,9 @@ def scales_building_callback_handler(call):
                               f'{users[user_id]["current_scale"]} mode')
 
     get_shifted_scale(SCALES_TO_FILES[users[user_id]["current_scale"]],
-                      users[user_id]["current_note"])
+                      users[user_id]["current_note"], user_id)
 
-    with open('scale.mp3', "rb") as audio_file:
+    with open(f'{user_id}_scale.mp3', "rb") as audio_file:
         message = bot.send_audio(chat_id, audio_file,
                                  f'Here is your _{users[user_id]["current_note"]} '
                                  f'{users[user_id]["current_scale"]}_ scale:\n\n{res}' + songs_text,
@@ -255,9 +255,9 @@ def intervals_building_callback_handler(call):
                            users[user_id]["current_interval"])
 
         interval_shift(INTERVALS_TO_FILES[users[user_id]["current_interval"]],
-                       NOTES.index(users[user_id]["current_note"]))
+                       NOTES.index(users[user_id]["current_note"]), user_id)
 
-        with open('interval.mp3', "rb") as audio_file:
+        with open(f'{user_id}_interval.mp3', "rb") as audio_file:
             message = bot.send_audio(chat_id, audio_file,
                                      f'_{users[user_id]["current_interval"]} of {users[user_id]["current_note"]}_ is *{res}*',
                                      parse_mode="Markdown",
@@ -268,7 +268,7 @@ def intervals_building_callback_handler(call):
 
     else:
         if call.data == users[user_id]['interval_answer']:
-            caption = f'*Correct!* The answer is _{users[user_id]["interval_answer"]}_'
+            caption = f'*Correct!* The answer is _{users[user_id]["interval_answer"]}_.'
             users[user_id]['results'].append(1)
         else:
             caption = f"*Sorry, you're wrong.* The answer is _{users[user_id]['interval_answer']}_."
@@ -303,9 +303,9 @@ def chords_building_callback_handler(call):
                         chord=users[user_id]["current_chord"])
 
         get_shifted_chord(users[user_id]["current_note"],
-                          users[user_id]["current_chord"])
+                          users[user_id]["current_chord"], user_id)
 
-        with open('chord.mp3', "rb") as audio_file:
+        with open(f'{user_id}_chord.mp3', "rb") as audio_file:
             message = bot.send_audio(chat_id, audio_file,
                                      f'Here are notes of your '
                                      f'_{users[user_id]["current_note"]}{users[user_id]["current_chord"]}_'
@@ -341,10 +341,10 @@ def chord_additions_building_callback_handler(call):
                     addition=users[user_id]["current_addition"])
 
     get_shifted_chord(users[user_id]["current_note"],
-                      users[user_id]["current_chord"],
+                      users[user_id]["current_chord"], user_id,
                       addition_sign)
 
-    with open('chord.mp3', "rb") as audio_file:
+    with open(f'{user_id}_chord.mp3', "rb") as audio_file:
         message = bot.send_audio(chat_id, audio_file,
                                  f'Here are notes of your '
                                  f'_{users[user_id]["current_note"]}{chord_sign}'
@@ -417,7 +417,7 @@ def notes_training_callback_handler(call):
         na = note_answers[ns]
         users[user_id]['note_answer'] = na
 
-        note_shift(ns)
+        note_shift(ns, user_id)
 
         variants = [x for i, x in enumerate(NOTES) if i != NOTES.index(na)]
         answers = [na] + random.sample(variants, k=3)
@@ -434,7 +434,7 @@ def notes_training_callback_handler(call):
         print(answers)
         print(na)
 
-        with open('note.mp3', "rb") as audio_file:
+        with open(f'{user_id}_note.mp3', "rb") as audio_file:
             message = bot.send_audio(chat_id, audio_file,
                                      reply_markup=answers_markup)
             users[user_id]['last_note'] = message.message_id
@@ -480,7 +480,7 @@ def intervals_training_callback_handler(call):
         ia = FILES_TO_INTERVALS[ins]
         users[user_id]['interval_answer'] = ia
 
-        interval_shift(ins, random.randrange(0, 12))
+        interval_shift(ins, random.randrange(0, 12), user_id)
 
         variants = [x for i, x in enumerate(list(FILES_TO_INTERVALS.values()))
                     if i != list(FILES_TO_INTERVALS.values()).index(ia)]
@@ -498,7 +498,7 @@ def intervals_training_callback_handler(call):
         print(answers)
         print(ia)
 
-        with open('interval.mp3', "rb") as audio_file:
+        with open(f'{user_id}_interval.mp3', "rb") as audio_file:
             message = bot.send_audio(chat_id, audio_file,
                                      reply_markup=answers_markup)
             users[user_id]['last_interval'] = message.message_id
