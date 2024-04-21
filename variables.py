@@ -14,6 +14,15 @@ SCALES = {
     'Dorian': [2, 1, 2, 2, 2, 1, 2]
 }
 
+SCALES_TO_FILES = {
+    'Major': 'major_scale',
+    'Minor': 'minor_scale',
+    'Major Pentatonic': 'major_pentatonic_scale',
+    'Minor Pentatonic': 'minor_pentatonic_scale',
+    'Blues': 'blues_scale',
+    'Dorian': 'dorian_scale'
+}
+
 INTERVALS = {
     'Minor 2nd': 1,
     'Major 2nd': 2,
@@ -25,7 +34,8 @@ INTERVALS = {
     'Minor 6th': 8,
     'Major 6th': 9,
     'Minor 7th': 10,
-    'Major 7th': 11
+    'Major 7th': 11,
+    'Octave': 12
 }
 
 CHORDS = {

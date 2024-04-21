@@ -4,11 +4,21 @@ start_markup = quick_markup({
     'Main menu 🏠': {'callback_data': 'Main'}
 }, row_width=1)
 
+intervals_exercise_markup = quick_markup({
+    'Exercise more 💪': {'callback_data': 'Intervals hearing'},
+    'Main menu 🏠': {'callback_data': 'Main'}
+}, row_width=1)
+
+notes_exercise_markup = quick_markup({
+    'Exercise more 💪': {'callback_data': 'Notes hearing'},
+    'Main menu 🏠': {'callback_data': 'Main'}
+}, row_width=1)
+
 main_markup = quick_markup({
-    'Learn basics 📖': {'callback_data': 'Basics'},
     'Build a scale 🎼': {'callback_data': 'Scale'},
     'Build an interval 🎵': {'callback_data': 'Intervals'},
-    'Build a chord 🎶': {'callback_data': 'Chords'}
+    'Build a chord 🎶': {'callback_data': 'Chords'},
+    'Ear training 🎧': {'callback_data': 'Training'}
 }, row_width=2)
 
 notes_markup = quick_markup({
@@ -77,5 +87,11 @@ chords_additions_markup = quick_markup({
     '...7': {'callback_data': '7'},
     '...maj7': {'callback_data': 'maj7'},
     'No additions': {'callback_data': 'None'},
+    'Back ↩️': {'callback_data': 'Back'}
+}, row_width=2)
+
+training_markup = quick_markup({
+    'Notes': {'callback_data': 'Notes hearing'},
+    'Intervals': {'callback_data': 'Intervals hearing'},
     'Back ↩️': {'callback_data': 'Back'}
 }, row_width=2)
