@@ -1,6 +1,6 @@
 # MusicTheoryBot  
 ## Creators
-Bot by ***pavlen5kiy, BrArtemGit, Bebront***  
+Asynchronous Telegram bot by ***pavlen5kiy, BrArtemGit, Bebront***  
 README by ***pavlen5kiy***
   
 ## Description
