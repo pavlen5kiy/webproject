@@ -1,13 +1,15 @@
 import json
+import asyncio
 
 from telebot import *
+from telebot.async_telebot import AsyncTeleBot
 
 from functions import *
 from variables import *
 from markups import *
 from pitch_shift import *
 
-bot = telebot.TeleBot(API_TOKEN)
+bot = AsyncTeleBot(API_TOKEN)
 
 with open('users.json') as users_data:
     users = json.load(users_data)
@@ -15,7 +17,7 @@ with open('users.json') as users_data:
 
 # Handle '/start'
 @bot.message_handler(commands=['start'])
-def send_welcome(message):
+async def send_welcome(message):
     chat_id = message.chat.id
     user_id = str(message.from_user.id)
 
@@ -37,7 +39,7 @@ def send_welcome(message):
                       'last_interval': '',
                       'interval_answer': ''}
 
-    bot.send_message(chat_id, """\
+    await bot.send_message(chat_id, """\
 Hi there, I am MusicTheoryBot 🎶
 I am here to help you with music theory!
 Maybe you want me to build a scale or give you some basic information. Whatever you want!\
@@ -46,28 +48,28 @@ Maybe you want me to build a scale or give you some basic information. Whatever 
 
 # Handle '/home'
 @bot.message_handler(commands=['home'])
-def send_welcome(message):
+async def send_welcome(message):
     chat_id = message.chat.id
-    bot.send_message(chat_id, "*Choose from the menu:*",
+    await bot.send_message(chat_id, "*Choose from the menu:*",
                      reply_markup=main_markup,
                      parse_mode="Markdown")
 
 
 # Handle non-command messages
 @bot.message_handler(func=lambda message: not message.text.startswith('/'))
-def handle_non_command_messages(message):
+async def handle_non_command_messages(message):
     # Handle non-command messages here
-    bot.send_message(message.chat.id, "Please, send commands only.")
+    await bot.send_message(message.chat.id, "Please, send commands only.")
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'Main')
-def main_callback_handler(call):
+async def main_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
     if call.data == "Main":
-        bot.answer_callback_query(call.id, "Main menu")
-        message = bot.send_message(chat_id,
+        await bot.answer_callback_query(call.id, "Main menu")
+        message = await bot.send_message(chat_id,
                                    "*Choose from the menu:*",
                                    reply_markup=main_markup,
                                    parse_mode="Markdown")
@@ -77,15 +79,15 @@ def main_callback_handler(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'Back')
-def back_callback_handler(call):
+async def back_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
     if call.message.id != users[user_id]['last_message']:
-        bot.answer_callback_query(call.id, "Can't go back")
+        await bot.answer_callback_query(call.id, "Can't go back")
     else:
-        bot.answer_callback_query(call.id, "Back")
-        bot.delete_message(chat_id,
+        await bot.answer_callback_query(call.id, "Back")
+        await bot.delete_message(chat_id,
                            users[user_id]['last_message'])
         users[user_id]['last_messages'].pop(-1)
         users[user_id]['last_message'] = (
@@ -93,15 +95,15 @@ def back_callback_handler(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'Scale')
-def scale_callback_handler(call):
+async def scale_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
     users[user_id]['last_songs'] = []
 
-    bot.answer_callback_query(call.id, "Build a scale")
+    await bot.answer_callback_query(call.id, "Build a scale")
     users[user_id]['destination'] = call.data
-    message = bot.send_message(chat_id,
+    message = await bot.send_message(chat_id,
                                "Let's build a scale. In what key?",
                                reply_markup=notes_markup,
                                parse_mode="Markdown")
@@ -111,13 +113,13 @@ def scale_callback_handler(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'Intervals')
-def intervals_callback_handler(call):
+async def intervals_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
-    bot.answer_callback_query(call.id, "Build an interval")
+    await bot.answer_callback_query(call.id, "Build an interval")
     users[user_id]['destination'] = call.data
-    message = bot.send_message(chat_id,
+    message = await bot.send_message(chat_id,
                                "Let's build an interval. From what note?",
                                reply_markup=notes_markup,
                                parse_mode="Markdown")
@@ -127,13 +129,13 @@ def intervals_callback_handler(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'Chords')
-def chords_callback_handler(call):
+async def chords_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
-    bot.answer_callback_query(call.id, "Build a chord")
+    await bot.answer_callback_query(call.id, "Build a chord")
     users[user_id]['destination'] = call.data
-    message = bot.send_message(chat_id,
+    message = await bot.send_message(chat_id,
                                "Let's build a chord. From what note?",
                                reply_markup=notes_markup,
                                parse_mode="Markdown")
@@ -143,12 +145,12 @@ def chords_callback_handler(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'Training')
-def training_callback_handler(call):
+async def training_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
-    bot.answer_callback_query(call.id, "Ear training")
-    message = bot.send_message(chat_id,
+    await bot.answer_callback_query(call.id, "Ear training")
+    message = await bot.send_message(chat_id,
                                "Let's complete some exercises. "
                                "What do you want to train?",
                                reply_markup=training_markup,
@@ -160,16 +162,16 @@ def training_callback_handler(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data in NOTES)
-def notes_callback_handler(call):
+async def notes_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
     users[user_id]["current_note"] = call.data
 
-    bot.answer_callback_query(call.id, users[user_id]["current_note"])
+    await bot.answer_callback_query(call.id, users[user_id]["current_note"])
 
     if users[user_id]['destination'] != 'notes hearing':
-        message = bot.send_message(chat_id,
+        message = await bot.send_message(chat_id,
                                    destinations[
                                        users[user_id][
                                            'destination']][
@@ -192,7 +194,7 @@ def notes_callback_handler(call):
             caption = f"*Sorry, you're wrong.* The answer is _{users[user_id]['note_answer']}_."
             users[user_id]['results'].append(0)
 
-        bot.edit_message_caption(caption, chat_id,
+        await bot.edit_message_caption(caption, chat_id,
                                  users[user_id]['last_note'],
                                  parse_mode='Markdown')
 
@@ -200,7 +202,7 @@ def notes_callback_handler(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data in SCALES)
-def scales_building_callback_handler(call):
+async def scales_building_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
@@ -224,14 +226,14 @@ def scales_building_callback_handler(call):
                       f'_{users[user_id]["current_note"]} {users[user_id]["current_scale"]}_:\n\n{songs}')
         markup = scale_finish_markup
 
-    bot.answer_callback_query(call.id,
+    await bot.answer_callback_query(call.id,
                               f'{users[user_id]["current_scale"]} mode')
 
     get_shifted_scale(SCALES_TO_FILES[users[user_id]["current_scale"]],
                       users[user_id]["current_note"], user_id)
 
     with open(f'{user_id}_scale.mp3', "rb") as audio_file:
-        message = bot.send_audio(chat_id, audio_file,
+        message = await bot.send_audio(chat_id, audio_file,
                                  f'Here is your _{users[user_id]["current_note"]} '
                                  f'{users[user_id]["current_scale"]}_ scale:\n\n{res}' + songs_text,
                                  parse_mode="Markdown",
@@ -242,13 +244,13 @@ def scales_building_callback_handler(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data in INTERVALS)
-def intervals_building_callback_handler(call):
+async def intervals_building_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
     users[user_id]["current_interval"] = call.data
 
-    bot.answer_callback_query(call.id, users[user_id]["current_interval"])
+    await bot.answer_callback_query(call.id, users[user_id]["current_interval"])
 
     if users[user_id]['destination'] != 'intervals hearing':
         res = get_interval(users[user_id]["current_note"],
@@ -258,7 +260,7 @@ def intervals_building_callback_handler(call):
                        NOTES.index(users[user_id]["current_note"]), user_id)
 
         with open(f'{user_id}_interval.mp3', "rb") as audio_file:
-            message = bot.send_audio(chat_id, audio_file,
+            message = await bot.send_audio(chat_id, audio_file,
                                      f'_{users[user_id]["current_interval"]} of {users[user_id]["current_note"]}_ is *{res}*',
                                      parse_mode="Markdown",
                                      reply_markup=finish_markup)
@@ -274,7 +276,7 @@ def intervals_building_callback_handler(call):
             caption = f"*Sorry, you're wrong.* The answer is _{users[user_id]['interval_answer']}_."
             users[user_id]['results'].append(0)
 
-        bot.edit_message_caption(caption, chat_id,
+        await bot.edit_message_caption(caption, chat_id,
                                  users[user_id]['last_interval'],
                                  parse_mode='Markdown')
 
@@ -282,17 +284,17 @@ def intervals_building_callback_handler(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data in CHORDS)
-def chords_building_callback_handler(call):
+async def chords_building_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
     users[user_id]["current_chord"] = call.data
 
-    bot.answer_callback_query(call.id, users[user_id]["current_chord"])
+    await bot.answer_callback_query(call.id, users[user_id]["current_chord"])
 
     if users[user_id]["current_chord"] == 'maj' or users[user_id][
         "current_chord"] == 'min':
-        message = bot.send_message(chat_id,
+        message = await bot.send_message(chat_id,
                                    f'OK. Any additions?',
                                    parse_mode="Markdown",
                                    reply_markup=chords_additions_markup)
@@ -306,7 +308,7 @@ def chords_building_callback_handler(call):
                           users[user_id]["current_chord"], user_id)
 
         with open(f'{user_id}_chord.mp3', "rb") as audio_file:
-            message = bot.send_audio(chat_id, audio_file,
+            message = await bot.send_audio(chat_id, audio_file,
                                      f'Here are notes of your '
                                      f'_{users[user_id]["current_note"]}{users[user_id]["current_chord"]}_'
                                      f' chord:\n*{res}*',
@@ -318,7 +320,7 @@ def chords_building_callback_handler(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data in CHORD_ADDITIONS)
-def chord_additions_building_callback_handler(call):
+async def chord_additions_building_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
@@ -334,7 +336,7 @@ def chord_additions_building_callback_handler(call):
     else:
         addition_sign = users[user_id]["current_addition"]
 
-    bot.answer_callback_query(call.id, users[user_id]["current_addition"])
+    await bot.answer_callback_query(call.id, users[user_id]["current_addition"])
 
     res = get_chord(root=users[user_id]['current_note'],
                     chord=users[user_id]['current_chord'],
@@ -345,7 +347,7 @@ def chord_additions_building_callback_handler(call):
                       addition_sign)
 
     with open(f'{user_id}_chord.mp3', "rb") as audio_file:
-        message = bot.send_audio(chat_id, audio_file,
+        message = await bot.send_audio(chat_id, audio_file,
                                  f'Here are notes of your '
                                  f'_{users[user_id]["current_note"]}{chord_sign}'
                                  f'{addition_sign}_ chord:\n*{res}*',
@@ -357,11 +359,11 @@ def chord_additions_building_callback_handler(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'More')
-def more_callback_handler(call):
+async def more_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
-    bot.answer_callback_query(call.id, 'More songs')
+    await bot.answer_callback_query(call.id, 'More songs')
 
     current_songs = get_songs('dataset.csv', 20,
                               NOTES_TO_NUMBERS[
@@ -384,7 +386,7 @@ def more_callback_handler(call):
     songs_text = (f'\n\nHere are some more songs written in '
                   f'_{users[user_id]["current_note"]} {users[user_id]["current_scale"]}_:\n\n{songs}')
 
-    message = bot.send_message(chat_id, songs_text,
+    message = await bot.send_message(chat_id, songs_text,
                                parse_mode="Markdown",
                                reply_markup=scale_finish_markup)
     users[user_id]['last_message'] = message.message_id
@@ -393,7 +395,7 @@ def more_callback_handler(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'Notes hearing')
-def notes_training_callback_handler(call):
+async def notes_training_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
@@ -401,9 +403,9 @@ def notes_training_callback_handler(call):
 
     users[user_id]['destination'] = 'notes hearing'
 
-    bot.answer_callback_query(call.id, 'Notes hearing')
+    await bot.answer_callback_query(call.id, 'Notes hearing')
 
-    bot.send_message(chat_id,
+    await bot.send_message(chat_id,
                      "You'll hear 5 notes. "
                      "Choose your answer below the audio. "
                      "Good luck!",
@@ -435,12 +437,12 @@ def notes_training_callback_handler(call):
         print(na)
 
         with open(f'{user_id}_note.mp3', "rb") as audio_file:
-            message = bot.send_audio(chat_id, audio_file,
+            message = await bot.send_audio(chat_id, audio_file,
                                      reply_markup=answers_markup)
             users[user_id]['last_note'] = message.message_id
 
         while not users[user_id]['responded']:
-            time.sleep(1)
+            await asyncio.sleep(1)
 
     right = users[user_id]['results'].count(1)
     wrong = users[user_id]['results'].count(0)
@@ -450,13 +452,13 @@ def notes_training_callback_handler(call):
     else:
         text = "Don't give up, try harder!"
 
-    bot.send_message(chat_id, f"That's all for now.\n"
+    await bot.send_message(chat_id, f"That's all for now.\n"
                               f"Your result is *{right}\\5*. {text}",
                      parse_mode='Markdown', reply_markup=notes_exercise_markup)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'Intervals hearing')
-def intervals_training_callback_handler(call):
+async def intervals_training_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
@@ -464,13 +466,13 @@ def intervals_training_callback_handler(call):
 
     users[user_id]['destination'] = 'intervals hearing'
 
-    bot.answer_callback_query(call.id, 'Intervals hearing')
+    await bot.answer_callback_query(call.id, 'Intervals hearing')
 
-    bot.send_message(chat_id,
-                     "You'll hear 5 intervals. "
-                     "Choose your answer below the audio. "
-                     "Good luck!",
-                     parse_mode="Markdown")
+    await bot.send_message(chat_id,
+                           "You'll hear 5 intervals. "
+                           "Choose your answer below the audio. "
+                           "Good luck!",
+                           parse_mode="Markdown")
 
     users[user_id]['intervals'] = random.sample(intervals_files, k=5)
 
@@ -499,12 +501,12 @@ def intervals_training_callback_handler(call):
         print(ia)
 
         with open(f'{user_id}_interval.mp3', "rb") as audio_file:
-            message = bot.send_audio(chat_id, audio_file,
-                                     reply_markup=answers_markup)
+            message = await bot.send_audio(chat_id, audio_file,
+                                           reply_markup=answers_markup)
             users[user_id]['last_interval'] = message.message_id
 
         while not users[user_id]['responded']:
-            time.sleep(1)
+            await asyncio.sleep(1)
 
     right = users[user_id]['results'].count(1)
     wrong = users[user_id]['results'].count(0)
@@ -514,17 +516,19 @@ def intervals_training_callback_handler(call):
     else:
         text = "Don't give up, try harder!"
 
-    bot.send_message(chat_id, f"That's all for now.\n"
-                              f"Your result is *{right}\\5*. {text}",
-                     parse_mode='Markdown',
-                     reply_markup=intervals_exercise_markup)
+    await bot.send_message(chat_id, f"That's all for now.\n"
+                                    f"Your result is *{right}\\5*. {text}",
+                           parse_mode='Markdown',
+                           reply_markup=intervals_exercise_markup)
 
 
 if __name__ == "__main__":
-    print(users)
-    bot.polling()
-
-    # Save data before exiting
-    with open('users.json', 'w') as users_data:
-        json.dump(users, users_data)
-    print("Data saved to data.json. Exiting...")
+    try:
+        print(users)
+        asyncio.run(bot.polling())
+    except Exception as e:
+        print(e)
+    finally:
+        with open('users.json', 'w') as users_data:
+            json.dump(users, users_data)
+        print("Data saved to data.json. Exiting...")
