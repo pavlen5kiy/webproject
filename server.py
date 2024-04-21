@@ -290,6 +290,134 @@ def main_menu_callback_handler(call):
         users[user_id]['last_messages'].append(users[user_id]['last_message'])
 
 
+@bot.callback_query_handler(func=lambda call: call.data == 'Notes hearing')
+def notes_training_callback_handler(call):
+    chat_id = call.message.chat.id
+    user_id = str(call.from_user.id)
+
+    users[user_id]['results'] = []
+
+    users[user_id]['destination'] = 'notes hearing'
+
+    bot.answer_callback_query(call.id, 'Notes hearing')
+
+    bot.send_message(chat_id,
+                     "You'll hear 5 notes. "
+                     "Choose your answer below the audio. "
+                     "Good luck!",
+                     parse_mode="Markdown")
+
+    users[user_id]['notes_shifts'] = random.sample(range(1, 12), k=5)
+
+    for ns in users[user_id]['notes_shifts']:
+        users[user_id]['responded'] = False
+
+        na = note_answers[ns]
+        users[user_id]['note_answer'] = na
+
+        note_shift(ns)
+
+        variants = [x for i, x in enumerate(NOTES) if i != NOTES.index(na)]
+        answers = [na] + random.sample(variants, k=3)
+        random.shuffle(answers)
+
+        answers_markup = quick_markup({
+            answers[0]: {'callback_data': answers[0]},
+            answers[1]: {'callback_data': answers[1]},
+            answers[2]: {'callback_data': answers[2]},
+            answers[3]: {'callback_data': answers[3]},
+        }, row_width=2)
+
+        print()
+        print(answers)
+        print(na)
+
+        with open('note.mp3', "rb") as audio_file:
+            message = bot.send_audio(chat_id, audio_file,
+                                     reply_markup=answers_markup)
+            users[user_id]['last_note'] = message.message_id
+
+        while not users[user_id]['responded']:
+            time.sleep(1)
+
+    right = users[user_id]['results'].count(1)
+    wrong = users[user_id]['results'].count(0)
+
+    if right > wrong:
+        text = "Great job!"
+    else:
+        text = "Don't give up, try harder!"
+
+    bot.send_message(chat_id, f"That's all for now.\n"
+                              f"Your result is *{right}\\5*. {text}",
+                     parse_mode='Markdown', reply_markup=notes_exercise_markup)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'Intervals hearing')
+def intervals_training_callback_handler(call):
+    chat_id = call.message.chat.id
+    user_id = str(call.from_user.id)
+
+    users[user_id]['results'] = []
+
+    users[user_id]['destination'] = 'intervals hearing'
+
+    bot.answer_callback_query(call.id, 'Intervals hearing')
+
+    bot.send_message(chat_id,
+                     "You'll hear 5 intervals. "
+                     "Choose your answer below the audio. "
+                     "Good luck!",
+                     parse_mode="Markdown")
+
+    users[user_id]['intervals'] = random.sample(intervals_files, k=5)
+
+    for ins in users[user_id]['intervals']:
+        users[user_id]['responded'] = False
+
+        ia = FILES_TO_INTERVALS[ins]
+        users[user_id]['interval_answer'] = ia
+
+        interval_shift(ins, random.randrange(0, 12))
+
+        variants = [x for i, x in enumerate(list(FILES_TO_INTERVALS.values()))
+                    if i != list(FILES_TO_INTERVALS.values()).index(ia)]
+        answers = [ia] + random.sample(variants, k=3)
+        random.shuffle(answers)
+
+        answers_markup = quick_markup({
+            answers[0]: {'callback_data': answers[0]},
+            answers[1]: {'callback_data': answers[1]},
+            answers[2]: {'callback_data': answers[2]},
+            answers[3]: {'callback_data': answers[3]},
+        }, row_width=2)
+
+        print()
+        print(answers)
+        print(ia)
+
+        with open('interval.mp3', "rb") as audio_file:
+            message = bot.send_audio(chat_id, audio_file,
+                                     reply_markup=answers_markup)
+            users[user_id]['last_interval'] = message.message_id
+
+        while not users[user_id]['responded']:
+            time.sleep(1)
+
+    right = users[user_id]['results'].count(1)
+    wrong = users[user_id]['results'].count(0)
+
+    if right > wrong:
+        text = "Great job!"
+    else:
+        text = "Don't give up, try harder!"
+
+    bot.send_message(chat_id, f"That's all for now.\n"
+                              f"Your result is *{right}\\5*. {text}",
+                     parse_mode='Markdown',
+                     reply_markup=intervals_exercise_markup)
+
+
 if __name__ == "__main__":
     print(users)
     bot.polling()
