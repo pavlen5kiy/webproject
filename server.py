@@ -5,6 +5,7 @@ from telebot import *
 from functions import *
 from variables import *
 from markups import *
+from pitch_shift import *
 
 bot = telebot.TeleBot(API_TOKEN)
 
@@ -26,7 +27,15 @@ def send_welcome(message):
                       'current_interval': '',
                       'current_chord': '',
                       'current_addition': '',
-                      'last_songs': []}
+                      'last_songs': [],
+                      'notes_shifts': [],
+                      'responded': False,
+                      'note_answer': '',
+                      'last_note': '',
+                      'results': [],
+                      'intervals': [],
+                      'last_interval': '',
+                      'interval_answer': ''}
 
     bot.send_message(chat_id, """\
 Hi there, I am MusicTheoryBot 🎶
@@ -51,10 +60,8 @@ def handle_non_command_messages(message):
     bot.send_message(message.chat.id, "Please, send commands only.")
 
 
-# Handle "main menu" and "back" buttons
-@bot.callback_query_handler(
-    func=lambda call: call.data in callback_queries_types['main'])
-def main_callbacks_handler(call):
+@bot.callback_query_handler(func=lambda call: call.data == 'Main')
+def main_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
@@ -68,81 +75,100 @@ def main_callbacks_handler(call):
 
         users[user_id]['last_messages'].append(users[user_id]['last_message'])
 
-    elif call.data == "Back":
-        if call.message.id != users[user_id]['last_message']:
-            bot.answer_callback_query(call.id, "Can't go back")
-        else:
-            bot.answer_callback_query(call.id, "Back")
-            bot.delete_message(chat_id,
-                               users[user_id]['last_message'])
-            users[user_id]['last_messages'].pop(-1)
-            users[user_id]['last_message'] = (
-                users)[user_id]['last_messages'][-1]
 
-
-# Handle main menu's buttons
-@bot.callback_query_handler(
-    func=lambda call: call.data in callback_queries_types['home'])
-def main_menu_callback_handler(call):
-    chat_id = call.message.chat.id
-    user_id = str(call.from_user.id)
-    print(type(user_id))
-
-    if call.data == "Basics":
-        bot.answer_callback_query(call.id, "Coming soon")
-        message = bot.send_message(chat_id,
-                                   "Sorry, this option is under development now.")
-        users[user_id]['last_message'] = message.message_id
-
-        users[user_id]['last_messages'].append(users[user_id]['last_message'])
-
-    elif call.data == "Scale":
-        bot.answer_callback_query(call.id, "Build a scale")
-        users[user_id]['destination'] = call.data
-        message = bot.send_message(chat_id,
-                                   "Let's build a scale. In what key?",
-                                   reply_markup=notes_markup,
-                                   parse_mode="Markdown")
-        users[user_id]['last_message'] = message.message_id
-
-        users[user_id]['last_messages'].append(users[user_id]['last_message'])
-
-    elif call.data == "Intervals":
-        bot.answer_callback_query(call.id, "Build an interval")
-        users[user_id]['destination'] = call.data
-        message = bot.send_message(chat_id,
-                                   "Let's build an interval. From what note?",
-                                   reply_markup=notes_markup,
-                                   parse_mode="Markdown")
-        users[user_id]['last_message'] = message.message_id
-
-        users[user_id]['last_messages'].append(users[user_id]['last_message'])
-
-    elif call.data == "Chords":
-        bot.answer_callback_query(call.id, "Build a chord")
-        users[user_id]['destination'] = call.data
-        message = bot.send_message(chat_id,
-                                   "Let's build a chord. From what note?",
-                                   reply_markup=notes_markup,
-                                   parse_mode="Markdown")
-        users[user_id]['last_message'] = message.message_id
-
-        users[user_id]['last_messages'].append(users[user_id]['last_message'])
-
-
-# Handle all other buttons
-@bot.callback_query_handler(
-    func=lambda call: call.data not in callback_queries_types[
-        'home'] and call.data not in callback_queries_types['main'])
-def main_menu_callback_handler(call):
+@bot.callback_query_handler(func=lambda call: call.data == 'Back')
+def back_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
 
-    if call.data in NOTES:
-        users[user_id]["current_note"] = call.data
+    if call.message.id != users[user_id]['last_message']:
+        bot.answer_callback_query(call.id, "Can't go back")
+    else:
+        bot.answer_callback_query(call.id, "Back")
+        bot.delete_message(chat_id,
+                           users[user_id]['last_message'])
+        users[user_id]['last_messages'].pop(-1)
+        users[user_id]['last_message'] = (
+            users)[user_id]['last_messages'][-1]
 
-        bot.answer_callback_query(call.id, users[user_id]["current_note"])
 
+@bot.callback_query_handler(func=lambda call: call.data == 'Scale')
+def scale_callback_handler(call):
+    chat_id = call.message.chat.id
+    user_id = str(call.from_user.id)
+
+    users[user_id]['last_songs'] = []
+
+    bot.answer_callback_query(call.id, "Build a scale")
+    users[user_id]['destination'] = call.data
+    message = bot.send_message(chat_id,
+                               "Let's build a scale. In what key?",
+                               reply_markup=notes_markup,
+                               parse_mode="Markdown")
+    users[user_id]['last_message'] = message.message_id
+
+    users[user_id]['last_messages'].append(users[user_id]['last_message'])
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'Intervals')
+def intervals_callback_handler(call):
+    chat_id = call.message.chat.id
+    user_id = str(call.from_user.id)
+
+    bot.answer_callback_query(call.id, "Build an interval")
+    users[user_id]['destination'] = call.data
+    message = bot.send_message(chat_id,
+                               "Let's build an interval. From what note?",
+                               reply_markup=notes_markup,
+                               parse_mode="Markdown")
+    users[user_id]['last_message'] = message.message_id
+
+    users[user_id]['last_messages'].append(users[user_id]['last_message'])
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'Chords')
+def chords_callback_handler(call):
+    chat_id = call.message.chat.id
+    user_id = str(call.from_user.id)
+
+    bot.answer_callback_query(call.id, "Build a chord")
+    users[user_id]['destination'] = call.data
+    message = bot.send_message(chat_id,
+                               "Let's build a chord. From what note?",
+                               reply_markup=notes_markup,
+                               parse_mode="Markdown")
+    users[user_id]['last_message'] = message.message_id
+
+    users[user_id]['last_messages'].append(users[user_id]['last_message'])
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'Training')
+def training_callback_handler(call):
+    chat_id = call.message.chat.id
+    user_id = str(call.from_user.id)
+
+    bot.answer_callback_query(call.id, "Ear training")
+    message = bot.send_message(chat_id,
+                               "Let's complete some exercises. "
+                               "What do you want to train?",
+                               reply_markup=training_markup,
+                               parse_mode="Markdown")
+
+    users[user_id]['last_message'] = message.message_id
+
+    users[user_id]['last_messages'].append(users[user_id]['last_message'])
+
+
+@bot.callback_query_handler(func=lambda call: call.data in NOTES)
+def notes_callback_handler(call):
+    chat_id = call.message.chat.id
+    user_id = str(call.from_user.id)
+
+    users[user_id]["current_note"] = call.data
+
+    bot.answer_callback_query(call.id, users[user_id]["current_note"])
+
+    if users[user_id]['destination'] != 'notes hearing':
         message = bot.send_message(chat_id,
                                    destinations[
                                        users[user_id][
@@ -158,136 +184,212 @@ def main_menu_callback_handler(call):
 
         users[user_id]['last_messages'].append(users[user_id]['last_message'])
 
-    elif call.data in SCALES:
-        users[user_id]["current_scale"] = call.data
-        res = '\n'.join(get_scale(users[user_id]["current_note"],
-                                  users[user_id]["current_scale"]))
-        songs_text = ''
-        markup = finish_markup
+    else:
+        if call.data == users[user_id]['note_answer']:
+            caption = f'*Correct!* The answer is _{users[user_id]["note_answer"]}_'
+            users[user_id]['results'].append(1)
+        else:
+            caption = f"*Sorry, you're wrong.* The answer is _{users[user_id]['note_answer']}_."
+            users[user_id]['results'].append(0)
 
-        if users[user_id]["current_scale"] in ['Major', 'Minor']:
-            current_songs = get_songs('dataset.csv', 10,
-                                      NOTES_TO_NUMBERS[
-                                          users[user_id]["current_note"]],
-                                      SCALES_TO_NUMBERS[
-                                          users[user_id]["current_scale"]])
+        bot.edit_message_caption(caption, chat_id,
+                                 users[user_id]['last_note'],
+                                 parse_mode='Markdown')
 
-            users[user_id]["last_songs"].append(current_songs)
+        users[user_id]['responded'] = True
 
-            songs = '\n'.join(current_songs)
-            songs_text = (f'\n\nHere are some songs written in '
-                          f'_{users[user_id]["current_note"]} {users[user_id]["current_scale"]}_:\n\n{songs}')
-            markup = scale_finish_markup
 
-        bot.answer_callback_query(call.id,
-                                  f'{users[user_id]["current_scale"]} mode')
-        message = bot.send_message(chat_id,
-                                   f'Here is your _{users[user_id]["current_note"]} '
-                                   f'{users[user_id]["current_scale"]}_ scale:\n\n{res}' + songs_text,
-                                   parse_mode="Markdown",
-                                   reply_markup=markup)
+@bot.callback_query_handler(func=lambda call: call.data in SCALES)
+def scales_building_callback_handler(call):
+    chat_id = call.message.chat.id
+    user_id = str(call.from_user.id)
+
+    users[user_id]["current_scale"] = call.data
+    res = '\n'.join(get_scale(users[user_id]["current_note"],
+                              users[user_id]["current_scale"]))
+    songs_text = ''
+    markup = finish_markup
+
+    if users[user_id]["current_scale"] in ['Major', 'Minor']:
+        current_songs = get_songs('dataset.csv', 10,
+                                  NOTES_TO_NUMBERS[
+                                      users[user_id]["current_note"]],
+                                  SCALES_TO_NUMBERS[
+                                      users[user_id]["current_scale"]])
+
+        users[user_id]["last_songs"].append(current_songs)
+
+        songs = '\n'.join(current_songs)
+        songs_text = (f'\n\nHere are some songs written in '
+                      f'_{users[user_id]["current_note"]} {users[user_id]["current_scale"]}_:\n\n{songs}')
+        markup = scale_finish_markup
+
+    bot.answer_callback_query(call.id,
+                              f'{users[user_id]["current_scale"]} mode')
+
+    get_shifted_scale(SCALES_TO_FILES[users[user_id]["current_scale"]],
+                      users[user_id]["current_note"])
+
+    with open('scale.mp3', "rb") as audio_file:
+        message = bot.send_audio(chat_id, audio_file,
+                                 f'Here is your _{users[user_id]["current_note"]} '
+                                 f'{users[user_id]["current_scale"]}_ scale:\n\n{res}' + songs_text,
+                                 parse_mode="Markdown",
+                                 reply_markup=markup)
         users[user_id]['last_message'] = message.message_id
 
         users[user_id]['last_messages'].append(users[user_id]['last_message'])
 
-    elif call.data in INTERVALS:
-        users[user_id]["current_interval"] = call.data
+
+@bot.callback_query_handler(func=lambda call: call.data in INTERVALS)
+def intervals_building_callback_handler(call):
+    chat_id = call.message.chat.id
+    user_id = str(call.from_user.id)
+
+    users[user_id]["current_interval"] = call.data
+
+    bot.answer_callback_query(call.id, users[user_id]["current_interval"])
+
+    if users[user_id]['destination'] != 'intervals hearing':
         res = get_interval(users[user_id]["current_note"],
                            users[user_id]["current_interval"])
 
-        bot.answer_callback_query(call.id, users[user_id]["current_interval"])
-        message = bot.send_message(chat_id,
-                                   f'_{users[user_id]["current_interval"]} of {users[user_id]["current_note"]}_ is *{res}*',
-                                   parse_mode="Markdown",
-                                   reply_markup=finish_markup)
-        users[user_id]['last_message'] = message.message_id
+        interval_shift(INTERVALS_TO_FILES[users[user_id]["current_interval"]],
+                       NOTES.index(users[user_id]["current_note"]))
 
-        users[user_id]['last_messages'].append(users[user_id]['last_message'])
-
-    elif call.data in CHORDS:
-        users[user_id]["current_chord"] = call.data
-
-        bot.answer_callback_query(call.id, users[user_id]["current_chord"])
-
-        if users[user_id]["current_chord"] == 'maj' or users[user_id][
-            "current_chord"] == 'min':
-            message = bot.send_message(chat_id,
-                                       f'OK. Any additions?',
-                                       parse_mode="Markdown",
-                                       reply_markup=chords_additions_markup)
-            users[user_id]['last_message'] = message.message_id
-
-        else:
-            res = get_chord(root=users[user_id]["current_note"],
-                            chord=users[user_id]["current_chord"])
-            message = bot.send_message(chat_id,
-                                       f'Here are notes of your '
-                                       f'_{users[user_id]["current_note"]}{users[user_id]["current_chord"]}_'
-                                       f' chord:\n*{res}*',
-                                       parse_mode="Markdown",
-                                       reply_markup=finish_markup)
+        with open('interval.mp3', "rb") as audio_file:
+            message = bot.send_audio(chat_id, audio_file,
+                                     f'_{users[user_id]["current_interval"]} of {users[user_id]["current_note"]}_ is *{res}*',
+                                     parse_mode="Markdown",
+                                     reply_markup=finish_markup)
             users[user_id]['last_message'] = message.message_id
 
         users[user_id]['last_messages'].append(users[user_id]['last_message'])
 
-    elif call.data in CHORD_ADDITIONS:
-        users[user_id]["current_addition"] = call.data
-
-        if users[user_id]["current_chord"] == 'maj':
-            chord_sign = ''
+    else:
+        if call.data == users[user_id]['interval_answer']:
+            caption = f'*Correct!* The answer is _{users[user_id]["interval_answer"]}_'
+            users[user_id]['results'].append(1)
         else:
-            chord_sign = 'm'
+            caption = f"*Sorry, you're wrong.* The answer is _{users[user_id]['interval_answer']}_."
+            users[user_id]['results'].append(0)
 
-        if users[user_id]["current_addition"] == 'None':
-            addition_sign = ''
-        else:
-            addition_sign = users[user_id]["current_addition"]
+        bot.edit_message_caption(caption, chat_id,
+                                 users[user_id]['last_interval'],
+                                 parse_mode='Markdown')
 
-        bot.answer_callback_query(call.id, users[user_id]["current_addition"])
+        users[user_id]['responded'] = True
 
-        res = get_chord(root=users[user_id]['current_note'],
-                        chord=users[user_id]['current_chord'],
-                        addition=users[user_id]["current_addition"])
+
+@bot.callback_query_handler(func=lambda call: call.data in CHORDS)
+def chords_building_callback_handler(call):
+    chat_id = call.message.chat.id
+    user_id = str(call.from_user.id)
+
+    users[user_id]["current_chord"] = call.data
+
+    bot.answer_callback_query(call.id, users[user_id]["current_chord"])
+
+    if users[user_id]["current_chord"] == 'maj' or users[user_id][
+        "current_chord"] == 'min':
         message = bot.send_message(chat_id,
-                                   f'Here are notes of your '
-                                   f'_{users[user_id]["current_note"]}{chord_sign}'
-                                   f'{addition_sign}_ chord:\n*{res}*',
+                                   f'OK. Any additions?',
                                    parse_mode="Markdown",
-                                   reply_markup=finish_markup)
+                                   reply_markup=chords_additions_markup)
         users[user_id]['last_message'] = message.message_id
 
-        users[user_id]['last_messages'].append(users[user_id]['last_message'])
+    else:
+        res = get_chord(root=users[user_id]["current_note"],
+                        chord=users[user_id]["current_chord"])
 
-    elif call.data == 'More':
-        bot.answer_callback_query(call.id, 'More songs')
+        get_shifted_chord(users[user_id]["current_note"],
+                          users[user_id]["current_chord"])
 
+        with open('chord.mp3', "rb") as audio_file:
+            message = bot.send_audio(chat_id, audio_file,
+                                     f'Here are notes of your '
+                                     f'_{users[user_id]["current_note"]}{users[user_id]["current_chord"]}_'
+                                     f' chord:\n*{res}*',
+                                     parse_mode="Markdown",
+                                     reply_markup=finish_markup)
+            users[user_id]['last_message'] = message.message_id
+
+    users[user_id]['last_messages'].append(users[user_id]['last_message'])
+
+
+@bot.callback_query_handler(func=lambda call: call.data in CHORD_ADDITIONS)
+def chord_additions_building_callback_handler(call):
+    chat_id = call.message.chat.id
+    user_id = str(call.from_user.id)
+
+    users[user_id]["current_addition"] = call.data
+
+    if users[user_id]["current_chord"] == 'maj':
+        chord_sign = ''
+    else:
+        chord_sign = 'm'
+
+    if users[user_id]["current_addition"] == 'None':
+        addition_sign = ''
+    else:
+        addition_sign = users[user_id]["current_addition"]
+
+    bot.answer_callback_query(call.id, users[user_id]["current_addition"])
+
+    res = get_chord(root=users[user_id]['current_note'],
+                    chord=users[user_id]['current_chord'],
+                    addition=users[user_id]["current_addition"])
+
+    get_shifted_chord(users[user_id]["current_note"],
+                      users[user_id]["current_chord"],
+                      addition_sign)
+
+    with open('chord.mp3', "rb") as audio_file:
+        message = bot.send_audio(chat_id, audio_file,
+                                 f'Here are notes of your '
+                                 f'_{users[user_id]["current_note"]}{chord_sign}'
+                                 f'{addition_sign}_ chord:\n*{res}*',
+                                 parse_mode="Markdown",
+                                 reply_markup=finish_markup)
+        users[user_id]['last_message'] = message.message_id
+
+    users[user_id]['last_messages'].append(users[user_id]['last_message'])
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'More')
+def more_callback_handler(call):
+    chat_id = call.message.chat.id
+    user_id = str(call.from_user.id)
+
+    bot.answer_callback_query(call.id, 'More songs')
+
+    current_songs = get_songs('dataset.csv', 20,
+                              NOTES_TO_NUMBERS[
+                                  users[user_id]['current_note']],
+                              SCALES_TO_NUMBERS[
+                                  users[user_id]["current_scale"]])
+
+    while any(
+            map(lambda s: len(set(s).intersection(set(current_songs))) > 4,
+                users[user_id]["last_songs"])):
         current_songs = get_songs('dataset.csv', 20,
                                   NOTES_TO_NUMBERS[
                                       users[user_id]['current_note']],
                                   SCALES_TO_NUMBERS[
                                       users[user_id]["current_scale"]])
 
-        while any(
-                map(lambda s: len(set(s).intersection(set(current_songs))) > 4,
-                    users[user_id]["last_songs"])):
-            current_songs = get_songs('dataset.csv', 20,
-                                      NOTES_TO_NUMBERS[
-                                          users[user_id]['current_note']],
-                                      SCALES_TO_NUMBERS[
-                                          users[user_id]["current_scale"]])
+    users[user_id]["last_songs"].append(current_songs)
 
-        users[user_id]["last_songs"].append(current_songs)
+    songs = '\n'.join(current_songs)
+    songs_text = (f'\n\nHere are some more songs written in '
+                  f'_{users[user_id]["current_note"]} {users[user_id]["current_scale"]}_:\n\n{songs}')
 
-        songs = '\n'.join(current_songs)
-        songs_text = (f'\n\nHere are some more songs written in '
-                      f'_{users[user_id]["current_note"]} {users[user_id]["current_scale"]}_:\n\n{songs}')
+    message = bot.send_message(chat_id, songs_text,
+                               parse_mode="Markdown",
+                               reply_markup=scale_finish_markup)
+    users[user_id]['last_message'] = message.message_id
 
-        message = bot.send_message(chat_id, songs_text,
-                                   parse_mode="Markdown",
-                                   reply_markup=scale_finish_markup)
-        users[user_id]['last_message'] = message.message_id
-
-        users[user_id]['last_messages'].append(users[user_id]['last_message'])
+    users[user_id]['last_messages'].append(users[user_id]['last_message'])
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'Notes hearing')
