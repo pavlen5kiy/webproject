@@ -1,4 +1,6 @@
 # MusicTheoryBot  
+[@Music_Theory_Helper_bot](https://t.me/Music_Theory_Helper_bot)
+
 ## Creators
 Asynchronous Telegram bot by ***pavlen5kiy, BrArtemGit, Bebront***  
 README by ***pavlen5kiy***
@@ -30,3 +32,5 @@ You will get 5 audios with 4 options every. Try to choose the right option!
 *Btw my highest score is 5\5 (my lowest is 0\5)*
 
 #### Enjoy our bot!
+
+Project deployed on https://www.pythonanywhere.com
