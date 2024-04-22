@@ -38,7 +38,8 @@ async def send_welcome(message):
                       'results': [],
                       'intervals': [],
                       'last_interval': '',
-                      'interval_answer': ''}
+                      'interval_answer': '',
+                      'exercising': False}
 
     await bot.send_message(chat_id, """\
 Hi there, I am MusicTheoryBot 🎶
@@ -51,9 +52,12 @@ Maybe you want me to build a scale or give you some basic information. Whatever 
 @bot.message_handler(commands=['home'])
 async def send_welcome(message):
     chat_id = message.chat.id
+    user_id = str(message.from_user.id)
+
+    users[user_id]['exercising'] = False
     await bot.send_message(chat_id, "*Choose from the menu:*",
-                     reply_markup=main_markup,
-                     parse_mode="Markdown")
+                           reply_markup=main_markup,
+                           parse_mode="Markdown")
 
 
 # Handle non-command messages
@@ -67,13 +71,14 @@ async def handle_non_command_messages(message):
 async def main_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
+    users[user_id]['exercising'] = False
 
     if call.data == "Main":
         await bot.answer_callback_query(call.id, "Main menu")
         message = await bot.send_message(chat_id,
-                                   "*Choose from the menu:*",
-                                   reply_markup=main_markup,
-                                   parse_mode="Markdown")
+                                         "*Choose from the menu:*",
+                                         reply_markup=main_markup,
+                                         parse_mode="Markdown")
         users[user_id]['last_message'] = message.message_id
 
         users[user_id]['last_messages'].append(users[user_id]['last_message'])
@@ -83,13 +88,14 @@ async def main_callback_handler(call):
 async def back_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
+    users[user_id]['exercising'] = False
 
     if call.message.id != users[user_id]['last_message']:
         await bot.answer_callback_query(call.id, "Can't go back")
     else:
         await bot.answer_callback_query(call.id, "Back")
         await bot.delete_message(chat_id,
-                           users[user_id]['last_message'])
+                                 users[user_id]['last_message'])
         users[user_id]['last_messages'].pop(-1)
         users[user_id]['last_message'] = (
             users)[user_id]['last_messages'][-1]
@@ -99,15 +105,16 @@ async def back_callback_handler(call):
 async def scale_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
+    users[user_id]['exercising'] = False
 
     users[user_id]['last_songs'] = []
 
     await bot.answer_callback_query(call.id, "Build a scale")
     users[user_id]['destination'] = call.data
     message = await bot.send_message(chat_id,
-                               "Let's build a scale. In what key?",
-                               reply_markup=notes_markup,
-                               parse_mode="Markdown")
+                                     "Let's build a scale. In what key?",
+                                     reply_markup=notes_markup,
+                                     parse_mode="Markdown")
     users[user_id]['last_message'] = message.message_id
 
     users[user_id]['last_messages'].append(users[user_id]['last_message'])
@@ -117,13 +124,14 @@ async def scale_callback_handler(call):
 async def intervals_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
+    users[user_id]['exercising'] = False
 
     await bot.answer_callback_query(call.id, "Build an interval")
     users[user_id]['destination'] = call.data
     message = await bot.send_message(chat_id,
-                               "Let's build an interval. From what note?",
-                               reply_markup=notes_markup,
-                               parse_mode="Markdown")
+                                     "Let's build an interval. From what note?",
+                                     reply_markup=notes_markup,
+                                     parse_mode="Markdown")
     users[user_id]['last_message'] = message.message_id
 
     users[user_id]['last_messages'].append(users[user_id]['last_message'])
@@ -133,13 +141,14 @@ async def intervals_callback_handler(call):
 async def chords_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
+    users[user_id]['exercising'] = False
 
     await bot.answer_callback_query(call.id, "Build a chord")
     users[user_id]['destination'] = call.data
     message = await bot.send_message(chat_id,
-                               "Let's build a chord. From what note?",
-                               reply_markup=notes_markup,
-                               parse_mode="Markdown")
+                                     "Let's build a chord. From what note?",
+                                     reply_markup=notes_markup,
+                                     parse_mode="Markdown")
     users[user_id]['last_message'] = message.message_id
 
     users[user_id]['last_messages'].append(users[user_id]['last_message'])
@@ -149,13 +158,14 @@ async def chords_callback_handler(call):
 async def training_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
+    users[user_id]['exercising'] = False
 
     await bot.answer_callback_query(call.id, "Ear training")
     message = await bot.send_message(chat_id,
-                               "Let's complete some exercises. "
-                               "What do you want to train?",
-                               reply_markup=training_markup,
-                               parse_mode="Markdown")
+                                     "Let's complete some exercises. "
+                                     "What do you want to train?",
+                                     reply_markup=training_markup,
+                                     parse_mode="Markdown")
 
     users[user_id]['last_message'] = message.message_id
 
@@ -172,17 +182,20 @@ async def notes_callback_handler(call):
     await bot.answer_callback_query(call.id, users[user_id]["current_note"])
 
     if users[user_id]['destination'] != 'notes hearing':
+
+        users[user_id]['exercising'] = False
+
         message = await bot.send_message(chat_id,
-                                   destinations[
-                                       users[user_id][
-                                           'destination']][
-                                       'text'],
-                                   reply_markup=
-                                   destinations[
-                                       users[user_id][
-                                           'destination']][
-                                       'markup'],
-                                   parse_mode="Markdown")
+                                         destinations[
+                                             users[user_id][
+                                                 'destination']][
+                                             'text'],
+                                         reply_markup=
+                                         destinations[
+                                             users[user_id][
+                                                 'destination']][
+                                             'markup'],
+                                         parse_mode="Markdown")
         users[user_id]['last_message'] = message.message_id
 
         users[user_id]['last_messages'].append(users[user_id]['last_message'])
@@ -196,8 +209,8 @@ async def notes_callback_handler(call):
             users[user_id]['results'].append(0)
 
         await bot.edit_message_caption(caption, chat_id,
-                                 users[user_id]['last_note'],
-                                 parse_mode='Markdown')
+                                       users[user_id]['last_note'],
+                                       parse_mode='Markdown')
 
         users[user_id]['responded'] = True
 
@@ -206,6 +219,7 @@ async def notes_callback_handler(call):
 async def scales_building_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
+    users[user_id]['exercising'] = False
 
     users[user_id]["current_scale"] = call.data
     res = '\n'.join(get_scale(users[user_id]["current_note"],
@@ -228,17 +242,17 @@ async def scales_building_callback_handler(call):
         markup = scale_finish_markup
 
     await bot.answer_callback_query(call.id,
-                              f'{users[user_id]["current_scale"]} mode')
+                                    f'{users[user_id]["current_scale"]} mode')
 
     get_shifted_scale(SCALES_TO_FILES[users[user_id]["current_scale"]],
                       users[user_id]["current_note"], user_id)
 
     with open(f'{user_id}_scale.mp3', "rb") as audio_file:
         message = await bot.send_audio(chat_id, audio_file,
-                                 f'Here is your _{users[user_id]["current_note"]} '
-                                 f'{users[user_id]["current_scale"]}_ scale:\n\n{res}' + songs_text,
-                                 parse_mode="Markdown",
-                                 reply_markup=markup)
+                                       f'Here is your _{users[user_id]["current_note"]} '
+                                       f'{users[user_id]["current_scale"]}_ scale:\n\n{res}' + songs_text,
+                                       parse_mode="Markdown",
+                                       reply_markup=markup)
         users[user_id]['last_message'] = message.message_id
 
         users[user_id]['last_messages'].append(users[user_id]['last_message'])
@@ -251,9 +265,12 @@ async def intervals_building_callback_handler(call):
 
     users[user_id]["current_interval"] = call.data
 
-    await bot.answer_callback_query(call.id, users[user_id]["current_interval"])
+    await bot.answer_callback_query(call.id,
+                                    users[user_id]["current_interval"])
 
     if users[user_id]['destination'] != 'intervals hearing':
+        users[user_id]['exercising'] = False
+
         res = get_interval(users[user_id]["current_note"],
                            users[user_id]["current_interval"])
 
@@ -262,9 +279,9 @@ async def intervals_building_callback_handler(call):
 
         with open(f'{user_id}_interval.mp3', "rb") as audio_file:
             message = await bot.send_audio(chat_id, audio_file,
-                                     f'_{users[user_id]["current_interval"]} of {users[user_id]["current_note"]}_ is *{res}*',
-                                     parse_mode="Markdown",
-                                     reply_markup=finish_markup)
+                                           f'_{users[user_id]["current_interval"]} of {users[user_id]["current_note"]}_ is *{res}*',
+                                           parse_mode="Markdown",
+                                           reply_markup=finish_markup)
             users[user_id]['last_message'] = message.message_id
 
         users[user_id]['last_messages'].append(users[user_id]['last_message'])
@@ -278,8 +295,8 @@ async def intervals_building_callback_handler(call):
             users[user_id]['results'].append(0)
 
         await bot.edit_message_caption(caption, chat_id,
-                                 users[user_id]['last_interval'],
-                                 parse_mode='Markdown')
+                                       users[user_id]['last_interval'],
+                                       parse_mode='Markdown')
 
         users[user_id]['responded'] = True
 
@@ -288,6 +305,7 @@ async def intervals_building_callback_handler(call):
 async def chords_building_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
+    users[user_id]['exercising'] = False
 
     users[user_id]["current_chord"] = call.data
 
@@ -296,9 +314,9 @@ async def chords_building_callback_handler(call):
     if users[user_id]["current_chord"] == 'maj' or users[user_id][
         "current_chord"] == 'min':
         message = await bot.send_message(chat_id,
-                                   f'OK. Any additions?',
-                                   parse_mode="Markdown",
-                                   reply_markup=chords_additions_markup)
+                                         f'OK. Any additions?',
+                                         parse_mode="Markdown",
+                                         reply_markup=chords_additions_markup)
         users[user_id]['last_message'] = message.message_id
 
     else:
@@ -310,11 +328,11 @@ async def chords_building_callback_handler(call):
 
         with open(f'{user_id}_chord.mp3', "rb") as audio_file:
             message = await bot.send_audio(chat_id, audio_file,
-                                     f'Here are notes of your '
-                                     f'_{users[user_id]["current_note"]}{users[user_id]["current_chord"]}_'
-                                     f' chord:\n*{res}*',
-                                     parse_mode="Markdown",
-                                     reply_markup=finish_markup)
+                                           f'Here are notes of your '
+                                           f'_{users[user_id]["current_note"]}{users[user_id]["current_chord"]}_'
+                                           f' chord:\n*{res}*',
+                                           parse_mode="Markdown",
+                                           reply_markup=finish_markup)
             users[user_id]['last_message'] = message.message_id
 
     users[user_id]['last_messages'].append(users[user_id]['last_message'])
@@ -324,6 +342,7 @@ async def chords_building_callback_handler(call):
 async def chord_additions_building_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
+    users[user_id]['exercising'] = False
 
     users[user_id]["current_addition"] = call.data
 
@@ -337,7 +356,8 @@ async def chord_additions_building_callback_handler(call):
     else:
         addition_sign = users[user_id]["current_addition"]
 
-    await bot.answer_callback_query(call.id, users[user_id]["current_addition"])
+    await bot.answer_callback_query(call.id,
+                                    users[user_id]["current_addition"])
 
     res = get_chord(root=users[user_id]['current_note'],
                     chord=users[user_id]['current_chord'],
@@ -349,11 +369,11 @@ async def chord_additions_building_callback_handler(call):
 
     with open(f'{user_id}_chord.mp3', "rb") as audio_file:
         message = await bot.send_audio(chat_id, audio_file,
-                                 f'Here are notes of your '
-                                 f'_{users[user_id]["current_note"]}{chord_sign}'
-                                 f'{addition_sign}_ chord:\n*{res}*',
-                                 parse_mode="Markdown",
-                                 reply_markup=finish_markup)
+                                       f'Here are notes of your '
+                                       f'_{users[user_id]["current_note"]}{chord_sign}'
+                                       f'{addition_sign}_ chord:\n*{res}*',
+                                       parse_mode="Markdown",
+                                       reply_markup=finish_markup)
         users[user_id]['last_message'] = message.message_id
 
     users[user_id]['last_messages'].append(users[user_id]['last_message'])
@@ -363,6 +383,7 @@ async def chord_additions_building_callback_handler(call):
 async def more_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
+    users[user_id]['exercising'] = False
 
     await bot.answer_callback_query(call.id, 'More songs')
 
@@ -388,8 +409,8 @@ async def more_callback_handler(call):
                   f'_{users[user_id]["current_note"]} {users[user_id]["current_scale"]}_:\n\n{songs}')
 
     message = await bot.send_message(chat_id, songs_text,
-                               parse_mode="Markdown",
-                               reply_markup=scale_finish_markup)
+                                     parse_mode="Markdown",
+                                     reply_markup=scale_finish_markup)
     users[user_id]['last_message'] = message.message_id
 
     users[user_id]['last_messages'].append(users[user_id]['last_message'])
@@ -399,6 +420,8 @@ async def more_callback_handler(call):
 async def notes_training_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
+
+    users[user_id]['exercising'] = True
 
     users[user_id]['results'] = []
     users[user_id]['note_answer'] = ''
@@ -410,10 +433,10 @@ async def notes_training_callback_handler(call):
     await bot.answer_callback_query(call.id, 'Notes hearing')
 
     await bot.send_message(chat_id,
-                     "You'll hear 5 notes. "
-                     "Choose your answer below the audio. "
-                     "Good luck!",
-                     parse_mode="Markdown")
+                           "You'll hear 5 notes. "
+                           "Choose your answer below the audio. "
+                           "Good luck!",
+                           parse_mode="Markdown")
 
     users[user_id]['notes_shifts'] = random.sample(range(1, 12), k=5)
 
@@ -442,29 +465,40 @@ async def notes_training_callback_handler(call):
 
         with open(f'{user_id}_note.mp3', "rb") as audio_file:
             message = await bot.send_audio(chat_id, audio_file,
-                                     reply_markup=answers_markup)
+                                           reply_markup=answers_markup)
             users[user_id]['last_note'] = message.message_id
 
         while not users[user_id]['responded']:
+            if not users[user_id]['exercising']:
+                break
             await asyncio.sleep(1)
 
-    right = users[user_id]['results'].count(1)
-    wrong = users[user_id]['results'].count(0)
+        if not users[user_id]['exercising']:
+            break
 
-    if right > wrong:
-        text = "Great job!"
-    else:
-        text = "Don't give up, try harder!"
+    if users[user_id]['exercising']:
+        right = users[user_id]['results'].count(1)
+        wrong = users[user_id]['results'].count(0)
 
-    await bot.send_message(chat_id, f"That's all for now.\n"
-                              f"Your result is *{right}\\5*. {text}",
-                     parse_mode='Markdown', reply_markup=notes_exercise_markup)
+        if right > wrong:
+            text = "Great job!"
+        else:
+            text = "Don't give up, try harder!"
+
+        await bot.send_message(chat_id, f"That's all for now.\n"
+                                        f"Your result is *{right}\\5*. {text}",
+                               parse_mode='Markdown',
+                               reply_markup=notes_exercise_markup)
+
+        users[user_id]['exercising'] = False
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'Intervals hearing')
 async def intervals_training_callback_handler(call):
     chat_id = call.message.chat.id
     user_id = str(call.from_user.id)
+
+    users[user_id]['exercising'] = True
 
     users[user_id]['results'] = []
     users[user_id]['interval_answer'] = ''
@@ -513,20 +547,29 @@ async def intervals_training_callback_handler(call):
             users[user_id]['last_interval'] = message.message_id
 
         while not users[user_id]['responded']:
+            if not users[user_id]['exercising']:
+                break
             await asyncio.sleep(1)
 
-    right = users[user_id]['results'].count(1)
-    wrong = users[user_id]['results'].count(0)
+        if not users[user_id]['exercising']:
+            break
 
-    if right > wrong:
-        text = "Great job!"
-    else:
-        text = "Don't give up, try harder!"
+    if users[user_id]['exercising']:
 
-    await bot.send_message(chat_id, f"That's all for now.\n"
-                                    f"Your result is *{right}\\5*. {text}",
-                           parse_mode='Markdown',
-                           reply_markup=intervals_exercise_markup)
+        right = users[user_id]['results'].count(1)
+        wrong = users[user_id]['results'].count(0)
+
+        if right > wrong:
+            text = "Great job!"
+        else:
+            text = "Don't give up, try harder!"
+
+        await bot.send_message(chat_id, f"That's all for now.\n"
+                                        f"Your result is *{right}\\5*. {text}",
+                               parse_mode='Markdown',
+                               reply_markup=intervals_exercise_markup)
+
+        users[user_id]['exercising'] = False
 
 
 if __name__ == "__main__":
